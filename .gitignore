@@ -2,3 +2,11 @@
 *.vcproj.*
 *.vcproj.filters
 *.vcproj.user
+
+.DS_Store
+__pycache__/
+bin/
+data/
+include/
+lib/
+pip-selfcheck.json
