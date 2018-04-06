@@ -4,10 +4,15 @@
 *.vcproj.user
 
 .DS_Store
+
 __pycache__/
 bin/
 data/
 data.BAK/
 include/
 lib/
+
+dog-cats-model*
+dataset.pyc
+checkpoint
 pip-selfcheck.json
