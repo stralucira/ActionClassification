@@ -12,7 +12,7 @@ data.BAK/
 include/
 lib/
 
-dog-cats-model*
+dogs-cats-model*
 dataset.pyc
 checkpoint
 pip-selfcheck.json
