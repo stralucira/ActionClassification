@@ -2,7 +2,6 @@ import cv2
 import os
 from os import listdir, getcwd
 from os.path import isfile, join, realpath
-from labels import dataLabels
 
 print(cv2.__version__)
 

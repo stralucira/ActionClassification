@@ -12,7 +12,13 @@ image_size=128
 num_channels=3
 images = []
 # Reading the image using OpenCV
-image = cv2.imread(filename)
+#image = cv2.imread(filename)
+# use videos instead of images          
+vidcap = cv2.VideoCapture(filename)
+vidcap.set(1,(int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
+success, image = vidcap.read()
+print(success)
+# take midframe of each video
 # Resizing the image to our desired size and preprocessing will be done exactly as done during training
 image = cv2.resize(image, (image_size, image_size),0,0, cv2.INTER_LINEAR)
 images.append(image)
@@ -25,7 +31,7 @@ x_batch = images.reshape(1, image_size,image_size,num_channels)
 ## Let us restore the saved model 
 sess = tf.Session()
 # Step-1: Recreate the network graph. At this step only graph is created.
-saver = tf.train.import_meta_graph('dogs-cats-model.meta')
+saver = tf.train.import_meta_graph('ucf101-model.meta')
 # Step-2: Now let's load the weights saved using the restore method.
 saver.restore(sess, tf.train.latest_checkpoint('./'))
 
@@ -39,7 +45,7 @@ y_pred = graph.get_tensor_by_name("y_pred:0")
 ## Let's feed the images to the input placeholders
 x= graph.get_tensor_by_name("x:0") 
 y_true = graph.get_tensor_by_name("y_true:0") 
-y_test_images = np.zeros((1, 2)) 
+y_test_images = np.zeros((1, 5)) 
 
 
 ### Creating the feed_dict that is required to be fed to calculate y_pred 
