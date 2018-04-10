@@ -1,26 +1,40 @@
-import cv2
 import os
-from os import listdir, getcwd
-from os.path import isfile, join, realpath
+import glob
+from os import getcwd
+from os.path import realpath
 
-print(cv2.__version__)
+import cv2
 
-def midFrameExtractor(allDataPaths, allDataLabels):
+from classes import classes
+from classes import train_path
 
-	savePath = realpath(getcwd() + '/data/training/frames/')
-	count = 0
 
-	#for count in range(0,3):
-	for count in range(0, len(allDataPaths)):
+def mid_frame_extractor(classes, train_path):
 
-		print(allDataPaths[count])
-		print(allDataLabels[count])
+    for fields in classes:
 
-		vidcap = cv2.VideoCapture(allDataPaths[count])
-		length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
-		print( 'Frame length of Video ' + str(count) + ' : '+  str(length) + '. ') 
-		vidcap.set(1,(length + 2 // 2) // 2)
-		success, image = vidcap.read()
+        index = classes.index(fields)
+        path = os.path.join(train_path, fields, '*i')
+        files = glob.glob(path)
 
-		cv2.imwrite(os.path.join(savePath, "midframe_" + str(count) + ".jpg"), image)	# save frame as JPEG file
-		count += 1
+        save_path = realpath(getcwd() + '/frames/' + classes[index])
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        for fl in files:
+
+            frame_name = os.path.splitext(os.path.basename(fl))[0]
+            
+            vidcap = cv2.VideoCapture(fl)
+            length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+            print('Length of video ' + frame_name + ': '+  str(length) + ' frames.')
+            vidcap.set(1, (length + 2 // 2) // 2)
+            success, image = vidcap.read()
+            # print(success)
+
+            cv2.imwrite(os.path.join(save_path, frame_name + ".jpg"), image)
+
+mid_frame_extractor(classes, train_path)
+
+# def flow_field_generator(all_data_labels, all_data_paths):
+#     save_path = realpath(getcwd() + )

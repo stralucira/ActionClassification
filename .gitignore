@@ -9,6 +9,7 @@ __pycache__/
 bin/
 data/
 data.BAK/
+frames/
 include/
 lib/
 
