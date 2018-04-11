@@ -1,7 +1,8 @@
 import os
 import glob
+import random
 from os import getcwd
-from os.path import realpath
+from os.path import isfile, join, realpath
 
 import numpy as np
 import cv2
@@ -32,11 +33,12 @@ def mid_frame_extractor(classes, train_path):
 
             save_name = os.path.splitext(os.path.basename(fl))[0]
             print(save_path)
-            #cv2.imwrite(os.path.join(save_path, save_name + ".jpg"), image)
+            cv2.imwrite(os.path.join(save_path, save_name + ".jpg"), image)
             print('Length of video ' + os.path.basename(fl) + ': '+  str(length) + ' frames.')            
             vidcap.release()
 
 # mid_frame_extractor(classes, train_path)
+
 
 def optical_flow_generator(classes, train_path):
     for fields in classes:
@@ -80,3 +82,36 @@ def optical_flow_generator(classes, train_path):
             vidcap.release()
 
 # optical_flow_generator(classes, train_path)
+
+
+def fold_generator(classes, train_path, fold_size):
+
+    path_class_tuples = []
+
+    for fields in classes:
+        index = classes.index(fields)
+        path = os.path.join(train_path, fields)
+        for file_name in os.listdir(path):
+            if isfile(join(path, file_name)):
+                path_class_tuples.append((join(path, file_name), index))
+    random.shuffle(path_class_tuples)
+
+    data_folds = []
+    data_fold_paths = []
+    data_fold_classes = []
+
+    for fold_index in range(0, fold_size):
+        data_folds.append([])
+        data_fold_paths.append([])
+        data_fold_classes.append([])
+
+    for data_index, path_class_tuple in enumerate(path_class_tuples):
+        data_folds[data_index % fold_size].append(path_class_tuple)
+
+    for fold_index in range(0, fold_size):
+        data_fold_paths[fold_index] += list(list(zip(*data_folds[fold_index]))[0])
+        data_fold_classes[fold_index] += list(list(zip(*data_folds[fold_index]))[1])
+
+    return data_fold_paths, data_fold_classes
+
+fold_generator(classes, train_path, 10)
