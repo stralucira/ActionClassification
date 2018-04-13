@@ -25,16 +25,16 @@ for fields in classes:
 
     images = []
 
-    path = os.path.join(test_path, fields, '*i')
+    path = os.path.join(test_path, fields, '*g')
     files = glob.glob(path)
     for filename in files:
 
         # Reading the image using OpenCV
-        # image = cv2.imread(filename)
+        image = cv2.imread(filename)
         # use videos instead of images          
-        vidcap = cv2.VideoCapture(filename)
-        vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
-        success, image = vidcap.read()
+        # vidcap = cv2.VideoCapture(filename)
+        # vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
+        # success, image = vidcap.read()
         # print(success)
 
         # take midframe of each video
@@ -85,3 +85,33 @@ for fields in classes:
 print()
 print('Confusion Matrix')
 print(confusion_matrix)
+
+precisions = []
+recalls = []
+
+for index in range(0, len(classes)):
+    true_positif = confusion_matrix[index, index]
+
+    precision = true_positif / np.sum(confusion_matrix[index])
+    precisions.append(precision)
+    
+    recall = true_positif / np.sum(confusion_matrix[:, index])
+    recalls.append(recall)
+
+print()
+print('Precisions')
+print(precisions)
+
+print()
+print('Recalls')
+print(recalls)
+
+f_scores = []
+
+for index in range(0, len(classes)):
+    f_score = (2 * precisions[index] * recalls[index]) / (precisions[index] + recalls[index])
+    f_scores.append(f_score)
+
+print()
+print('F-Scores')
+print(f_scores)   

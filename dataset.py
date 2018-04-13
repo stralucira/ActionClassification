@@ -16,14 +16,14 @@ def load_train(train_path, image_size, classes):
     for fields in classes:
         index = classes.index(fields)
         print('Now going to read {} files (Index: {})'.format(fields, index))
-        path = os.path.join(train_path, fields, '*i')
+        path = os.path.join(train_path, fields, '*g')
         files = glob.glob(path)
         for fl in files:
-            # image = cv2.imread(fl)
+            image = cv2.imread(fl)
             # use videos instead of images
-            vidcap = cv2.VideoCapture(fl)
-            vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
-            success, image = vidcap.read()
+            # vidcap = cv2.VideoCapture(fl)
+            # vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
+            # success, image = vidcap.read()
             # print(success)
             # take midframe of each video
             image = cv2.resize(image, (image_size, image_size), 0, 0, cv2.INTER_LINEAR)

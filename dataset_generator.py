@@ -10,6 +10,7 @@ import cv2
 
 from classes import classes
 from classes import train_path
+from classes import test_path
 
 
 def mid_frame_extractor(classes, train_path):
@@ -20,7 +21,7 @@ def mid_frame_extractor(classes, train_path):
         path = os.path.join(train_path, fields, '*i')
         files = glob.glob(path)
 
-        save_path = realpath(getcwd() + '/frames/ucf-101/' + classes[index])
+        save_path = realpath(getcwd() + '/data/ucf-101/' + classes[index])
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -33,12 +34,12 @@ def mid_frame_extractor(classes, train_path):
             # print(success)
 
             save_name = os.path.splitext(os.path.basename(fl))[0]
-            print(save_path)
+            # print(save_path)
             cv2.imwrite(os.path.join(save_path, save_name + ".jpg"), image)
             print('Length of video ' + os.path.basename(fl) + ': '+  str(length) + ' frames.')            
             vidcap.release()
 
-# mid_frame_extractor(classes, train_path)
+# mid_frame_extractor(classes, test_path)
 
 
 def optical_flow_generator(classes, train_path):
@@ -85,7 +86,7 @@ def optical_flow_generator(classes, train_path):
             print('Done processing ' + os.path.basename(fl) + '.')            
             vidcap.release()
 
-optical_flow_generator(classes, train_path)
+# optical_flow_generator(classes, train_path)
 
 
 def fold_generator(classes, train_path, fold_size):
@@ -127,3 +128,35 @@ def fold_generator(classes, train_path, fold_size):
 #     for fold_index in range(0, fold_size):
 #         dataset = tf.data.Dataset.from_tensor_slices((fold_paths[fold_index], fold_classes[fold_index])) 
 #         dataset = dataset.map(lambda filename, )
+
+
+def mirror_augment_generator(classes, train_path):
+
+    for fields in classes:
+
+        index = classes.index(fields)
+        path = os.path.join(train_path, fields, '*i')
+        files = glob.glob(path)
+
+        save_path = realpath(getcwd() + '/data/ucf-101/' + classes[index])
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        for fl in files:
+
+            print(fl)
+            vidcap = cv2.VideoCapture(fl)
+            length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+            vidcap.set(1, (length + 2 // 2) // 2)
+            success, image = vidcap.read()
+            dst = image
+            cv2.flip(image, 1, dst)
+            # print(success)
+
+            save_name = os.path.splitext(os.path.basename(fl))[0]
+            # print(save_path)
+            cv2.imwrite(os.path.join(save_path, save_name + "_mirrored.jpg"), dst)
+            print('Length of video ' + os.path.basename(fl) + ': '+  str(length) + ' frames.')            
+            vidcap.release()
+
+# mirror_augment_generator(classes, train_path)
