@@ -4,6 +4,7 @@ import random
 from os import getcwd
 from os.path import isfile, join, realpath
 
+import tensorflow as tf
 import numpy as np
 import cv2
 
@@ -76,18 +77,20 @@ def optical_flow_generator(classes, train_path):
                 previous_frame = next_frame
                 is_not_last_frame, next_frame = vidcap.read()
             
-            save_name = os.path.splitext(os.path.basename(fl))[0]
-            np.save(os.path.join(save_path, save_name), max_magnitude_optical_flow)
+            save_name = os.path.splitext(os.path.basename(fl))[0] + '.flo'
+            # np.save(os.path.join(save_path, save_name), max_magnitude_optical_flow)
+
+            cv2.optflow.writeOpticalFlow(os.path.join(save_path, save_name), max_magnitude_optical_flow)
+
             print('Done processing ' + os.path.basename(fl) + '.')            
             vidcap.release()
 
-# optical_flow_generator(classes, train_path)
+optical_flow_generator(classes, train_path)
 
 
 def fold_generator(classes, train_path, fold_size):
 
     path_class_tuples = []
-
     for fields in classes:
         index = classes.index(fields)
         path = os.path.join(train_path, fields)
@@ -96,22 +99,31 @@ def fold_generator(classes, train_path, fold_size):
                 path_class_tuples.append((join(path, file_name), index))
     random.shuffle(path_class_tuples)
 
-    data_folds = []
-    data_fold_paths = []
-    data_fold_classes = []
+    folds = []
+    fold_paths = []
+    fold_classes = []
 
     for fold_index in range(0, fold_size):
-        data_folds.append([])
-        data_fold_paths.append([])
-        data_fold_classes.append([])
+        folds.append([])
+        fold_paths.append([])
+        fold_classes.append([])
 
-    for data_index, path_class_tuple in enumerate(path_class_tuples):
-        data_folds[data_index % fold_size].append(path_class_tuple)
+    for index, path_class_tuple in enumerate(path_class_tuples):
+        folds[index % fold_size].append(path_class_tuple)
 
     for fold_index in range(0, fold_size):
-        data_fold_paths[fold_index] += list(list(zip(*data_folds[fold_index]))[0])
-        data_fold_classes[fold_index] += list(list(zip(*data_folds[fold_index]))[1])
+        fold_paths[fold_index] += list(list(zip(*folds[fold_index]))[0])
+        fold_classes[fold_index] += list(list(zip(*folds[fold_index]))[1])
 
-    return data_fold_paths, data_fold_classes
+    return fold_paths, fold_classes
 
-fold_generator(classes, train_path, 10)
+# fold_generator(classes, train_path, 10)
+
+
+# def dataset_constructor(classes, train_path, fold_size):
+#     fold_paths, fold_classes = fold_generator(classes, train_path, fold_size)
+#     datasets = []
+
+#     for fold_index in range(0, fold_size):
+#         dataset = tf.data.Dataset.from_tensor_slices((fold_paths[fold_index], fold_classes[fold_index])) 
+#         dataset = dataset.map(lambda filename, )

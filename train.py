@@ -189,7 +189,7 @@ def train(num_iteration):
 
         if i % int(data.train.num_examples/batch_size) == 0: 
             val_loss = session.run(cost, feed_dict=feed_dict_val)
-            epoch = int(i / int(data.train.num_examples/batch_size))    
+            epoch = int(i / int(data.train.num_examples/batch_size))
 
             show_progress(epoch, feed_dict_tr, feed_dict_val, val_loss)
             saver.save(session, './ucf101-model') 
