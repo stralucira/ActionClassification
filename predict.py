@@ -7,15 +7,15 @@ from parameters import CLASSES
 from parameters import TEST_PATH
 from parameters import IMG_SIZE
 
-# Load all the test batches
-TEST_BATCHES_INPUT = load_test(TEST_PATH, IMG_SIZE, CLASSES)
-
 # Let us restore the saved model
 SESSION = tf.Session()
 # Step-1: Recreate the network graph. At this step only graph is created.
 SAVER = tf.train.import_meta_graph('ucf101-model.meta')
 # Step-2: Now let's load the weights saved using the restore method.
-SAVER.restore(SESS, tf.train.latest_checkpoint('./'))
+SAVER.restore(SESSION, tf.train.latest_checkpoint('./'))
+
+# Load all the test batches
+TEST_BATCHES_INPUT = load_test(TEST_PATH, IMG_SIZE, CLASSES)
 
 def performance_measure(test_batches, session):
     """Measure trained convolutional neural network performance"""

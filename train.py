@@ -10,8 +10,6 @@ from numpy.random import seed
 import tensorflow as tf
 from tensorflow import set_random_seed
 
-#from predict import performance_measure
-
 from parameters import CLASSES
 from parameters import TRAIN_PATH
 from parameters import TEST_PATH
@@ -122,7 +120,6 @@ def create_fc_layer(input, num_inputs, num_outputs, use_relu=True):
 
     return layer
 
-
 layer_conv1 = create_convolutional_layer(input=x,
                 num_input_channels=NUM_CHANNELS,
                 conv_filter_size=filter_size_conv1,
@@ -169,8 +166,6 @@ def show_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
     val_acc = session.run(accuracy, feed_dict=feed_dict_validate)
     msg = "Training Epoch {0} --- Training Accuracy: {1:>6.1%}, Validation Accuracy: {2:>6.1%},  Validation Loss: {3:.3f}"
     print(msg.format(epoch + 1, acc, val_acc, val_loss))
-
-
 
 total_iterations = 0
 saver = tf.train.Saver()
