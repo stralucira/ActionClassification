@@ -10,6 +10,8 @@ from numpy.random import seed
 import tensorflow as tf
 from tensorflow import set_random_seed
 
+#from predict import performance_measure
+
 from parameters import CLASSES
 from parameters import TRAIN_PATH
 from parameters import TEST_PATH
@@ -29,10 +31,12 @@ VALIDATION_SIZE = 0.2
 
 # We shall load all the training and validation images and labels into memory using openCV and use that during training
 data = dataset.read_train_sets(TRAIN_PATH, IMG_SIZE, CLASSES, validation_size=VALIDATION_SIZE)
+test_batches = dataset.load_test(TEST_PATH, IMG_SIZE, CLASSES)
 
 print("Complete reading input data. Will Now print a snippet of it")
-print("Number of files in Training-set:\t\t{}".format(len(data.train.labels)))
+print("Number of files in Training-set:\t{}".format(len(data.train.labels)))
 print("Number of files in Validation-set:\t{}".format(len(data.valid.labels)))
+print("Number of files in Testing-set:\t{}".format(len(test_batches)))
 
 session = tf.Session()
 x = tf.placeholder(tf.float32, shape=[None, IMG_SIZE, IMG_SIZE, NUM_CHANNELS], name='x')
@@ -167,12 +171,23 @@ def show_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
     print(msg.format(epoch + 1, acc, val_acc, val_loss))
 
 
+
 total_iterations = 0
 saver = tf.train.Saver()
 
 
 def train(num_iteration):
     global total_iterations
+
+    # Parameters for performance measurements
+    epoch_f_scores = []
+    epoch_recalls = []
+    epoch_precisions = []
+    graph = tf.get_default_graph()
+    y_pred = graph.get_tensor_by_name("y_pred:0")
+    x = graph.get_tensor_by_name("x:0")
+    y_true = graph.get_tensor_by_name("y_true:0")
+    y_test_images = np.zeros((1, len(CLASSES)))
 
     for i in range(total_iterations,
                    total_iterations + num_iteration):
@@ -185,13 +200,42 @@ def train(num_iteration):
 
         session.run(optimizer, feed_dict=feed_dict_tr)
 
-        if i % int(data.train.num_examples/BATCH_SIZE) == 0: 
+        if i % int(data.train.num_examples/BATCH_SIZE) == 0:
             val_loss = session.run(cost, feed_dict=feed_dict_val)
             epoch = int(i / int(data.train.num_examples/BATCH_SIZE))
 
             show_progress(epoch, feed_dict_tr, feed_dict_val, val_loss)
-            # saver.save(session, './ucf101-model')
+            saver.save(session, './ucf101-model')
+
+            """Measure convolutional neural network performance each epoch"""
+            confusion_matrix = np.zeros((len(CLASSES), len(CLASSES)))
+            precisions = []
+            recalls = []
+            f_scores = []
+            actual_class_counter = 0
+            for index, test_batch in enumerate(test_batches):
+                feed_dict_testing = {x: test_batch, y_true: y_test_images}
+                result = session.run(y_pred, feed_dict=feed_dict_testing)
+                for index, predicted_class in enumerate(session.run(tf.argmax(result, axis=1))):
+                    confusion_matrix[actual_class_counter, predicted_class] += 1
+                actual_class_counter += 1
+            for index in range(0, len(CLASSES)):
+                true_positif = confusion_matrix[index, index]
+                precision = true_positif / np.sum(confusion_matrix[index])
+                precisions.append(precision)
+                recall = true_positif / np.sum(confusion_matrix[:, index])
+                recalls.append(recall)
+            for index in range(0, len(CLASSES)):
+                f_score = (2 * precisions[index] * recalls[index]) / (precisions[index] + recalls[index])
+                f_scores.append(f_score)
+            epoch_f_scores.append(f_scores)
+            epoch_recalls.append(recalls)
+            epoch_precisions.append(precisions)
+
     total_iterations += num_iteration
 
+    np.savetxt('epoch_f_scores.csv', epoch_f_scores, delimiter=",")
+    np.savetxt('epoch_recalls.csv', epoch_recalls, delimiter=",")
+    np.savetxt('epoch_precisions.csv', epoch_precisions, delimiter=",")
 
 train(num_iteration=3000)
