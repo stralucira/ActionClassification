@@ -1,4 +1,4 @@
-"ASDF"
+"""Module to train convolutional neural network"""
 import dataset
 import time
 from datetime import timedelta
@@ -10,37 +10,35 @@ from numpy.random import seed
 import tensorflow as tf
 from tensorflow import set_random_seed
 
-from classes import classes
-from classes import train_path
+from parameters import CLASSES
+from parameters import TRAIN_PATH
+from parameters import TEST_PATH
+from parameters import IMG_SIZE
+from parameters import NUM_CHANNELS
+from parameters import BATCH_SIZE
 
 # Adding Seed so that random initialization is consistent
 seed(1)
 set_random_seed(2)
 
-batch_size = 32
-
 # Prepare input data
-# classes = ['BrushingTeeth', 'CuttingInKitchen', 'JumpingJack', 'Lunges', 'WallPushups']
-num_classes = len(classes)
+NUM_CLASSES = len(CLASSES)
 
 # 20% of the data will automatically be used for validation
-validation_size = 0.2
-img_size = 128
-num_channels = 3
-# train_path = 'data/ucf-101'
+VALIDATION_SIZE = 0.2
 
 # We shall load all the training and validation images and labels into memory using openCV and use that during training
-data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
+data = dataset.read_train_sets(TRAIN_PATH, IMG_SIZE, CLASSES, validation_size=VALIDATION_SIZE)
 
 print("Complete reading input data. Will Now print a snippet of it")
 print("Number of files in Training-set:\t\t{}".format(len(data.train.labels)))
 print("Number of files in Validation-set:\t{}".format(len(data.valid.labels)))
 
 session = tf.Session()
-x = tf.placeholder(tf.float32, shape=[None, img_size, img_size, num_channels], name='x')
+x = tf.placeholder(tf.float32, shape=[None, IMG_SIZE, IMG_SIZE, NUM_CHANNELS], name='x')
 
 # labels
-y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
+y_true = tf.placeholder(tf.float32, shape=[None, NUM_CLASSES], name='y_true')
 y_true_cls = tf.argmax(y_true, axis=1)
 
 # Network graph params
@@ -52,7 +50,7 @@ num_filters_conv2 = 32
 
 filter_size_conv3 = 3
 num_filters_conv3 = 64
-    
+
 fc_layer_size = 128
 
 
@@ -122,7 +120,7 @@ def create_fc_layer(input, num_inputs, num_outputs, use_relu=True):
 
 
 layer_conv1 = create_convolutional_layer(input=x,
-                num_input_channels=num_channels,
+                num_input_channels=NUM_CHANNELS,
                 conv_filter_size=filter_size_conv1,
                 num_filters=num_filters_conv1)
 
@@ -145,7 +143,7 @@ layer_fc1 = create_fc_layer(input=layer_flat,
 
 layer_fc2 = create_fc_layer(input=layer_fc1,
                 num_inputs=fc_layer_size,
-                num_outputs=num_classes,
+                num_outputs=NUM_CLASSES,
                 use_relu=False)
 
 y_pred = tf.nn.softmax(layer_fc2, name='y_pred')
@@ -179,20 +177,20 @@ def train(num_iteration):
     for i in range(total_iterations,
                    total_iterations + num_iteration):
 
-        x_batch, y_true_batch, _, cls_batch = data.train.next_batch(batch_size)
-        x_valid_batch, y_valid_batch, _, valid_cls_batch = data.valid.next_batch(batch_size)
+        x_batch, y_true_batch, _, cls_batch = data.train.next_batch(BATCH_SIZE)
+        x_valid_batch, y_valid_batch, _, valid_cls_batch = data.valid.next_batch(BATCH_SIZE)
 
         feed_dict_tr = {x: x_batch, y_true: y_true_batch}
         feed_dict_val = {x: x_valid_batch, y_true: y_valid_batch}
 
         session.run(optimizer, feed_dict=feed_dict_tr)
 
-        if i % int(data.train.num_examples/batch_size) == 0: 
+        if i % int(data.train.num_examples/BATCH_SIZE) == 0: 
             val_loss = session.run(cost, feed_dict=feed_dict_val)
-            epoch = int(i / int(data.train.num_examples/batch_size))
+            epoch = int(i / int(data.train.num_examples/BATCH_SIZE))
 
             show_progress(epoch, feed_dict_tr, feed_dict_val, val_loss)
-            saver.save(session, './ucf101-model') 
+            # saver.save(session, './ucf101-model')
     total_iterations += num_iteration
 
 

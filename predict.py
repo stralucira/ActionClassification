@@ -1,52 +1,24 @@
 import os, glob
 import sys, argparse
 
-import cv2
 import tensorflow as tf
 import numpy as np
 
-from classes import classes
-from classes import test_path
-
-# First, pass the path of the image
-# dir_path = os.path.dirname(os.path.realpath(__file__))
-# image_path = sys.argv[1]
-# filename = dir_path + '/' + image_path
-image_size = 128
-num_channels = 3
+from dataset import load_test
+from parameters import CLASSES
+from parameters import TEST_PATH
+from parameters import IMG_SIZE
 
 # Initialize the confusion matrix
-confusion_matrix = np.zeros((len(classes), len(classes)))
+confusion_matrix = np.zeros((len(CLASSES), len(CLASSES)))
 
 # Counter to loop all over the classes
 actual_class_counter = 0
 
-for fields in classes:
+# Load all the test batches
+test_batches = load_test(TEST_PATH, IMG_SIZE, CLASSES)
 
-    images = []
-
-    path = os.path.join(test_path, fields, '*g')
-    files = glob.glob(path)
-    for filename in files:
-
-        # Reading the image using OpenCV
-        image = cv2.imread(filename)
-        # use videos instead of images          
-        # vidcap = cv2.VideoCapture(filename)
-        # vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
-        # success, image = vidcap.read()
-        # print(success)
-
-        # take midframe of each video
-        # Resizing the image to our desired size and preprocessing will be done exactly as done during training
-        image = cv2.resize(image, (image_size, image_size), 0,0, cv2.INTER_LINEAR)
-        images.append(image)
-    images = np.array(images, dtype=np.uint8)
-    images = images.astype('float32')
-    images = np.multiply(images, 1.0/255.0)
-
-    # The input to the network is of shape [None image_size image_size num_channels]. Hence we reshape.
-    x_batch = images.reshape(len(images), image_size, image_size, num_channels)
+for index, test_batch in enumerate(test_batches):
 
     # Let us restore the saved model
     sess = tf.Session()
@@ -65,19 +37,19 @@ for fields in classes:
     # Let's feed the images to the input placeholders
     x = graph.get_tensor_by_name("x:0") 
     y_true = graph.get_tensor_by_name("y_true:0") 
-    y_test_images = np.zeros((1, len(classes)))
+    y_test_images = np.zeros((1, len(CLASSES)))
 
     # Creating the feed_dict that is required to be fed to calculate y_pred
-    feed_dict_testing = {x: x_batch, y_true: y_test_images}
+    feed_dict_testing = {x: test_batch, y_true: y_test_images}
     result = sess.run(y_pred, feed_dict=feed_dict_testing)
     # result is of this format [probabiliy_of_rose probability_of_sunflower]
     print()
-    print('Prediction results for ' + str(len(files)) + ' data(s) in class ' + str(actual_class_counter + 1) + ': ' + classes[actual_class_counter])
+    print('Prediction results for ' + str(len(test_batch)) + ' data(s) in class ' + str(actual_class_counter + 1) + ': ' + CLASSES[actual_class_counter])
     print(result)
     print()
 
     # Fill in confusion matrix based on the actual and predicted labels
-    for index, predicted_class in enumerate(sess.run(tf.argmax(result, axis=1))):
+    for index2, predicted_class in enumerate(sess.run(tf.argmax(result, axis=1))):
         confusion_matrix[actual_class_counter, predicted_class] += 1
 
     actual_class_counter += 1
@@ -86,32 +58,32 @@ print()
 print('Confusion Matrix')
 print(confusion_matrix)
 
-precisions = []
-recalls = []
+PRECISIONS = []
+RECALLS = []
 
-for index in range(0, len(classes)):
+for index in range(0, len(CLASSES)):
     true_positif = confusion_matrix[index, index]
 
     precision = true_positif / np.sum(confusion_matrix[index])
-    precisions.append(precision)
-    
+    PRECISIONS.append(precision)
+
     recall = true_positif / np.sum(confusion_matrix[:, index])
-    recalls.append(recall)
+    RECALLS.append(recall)
 
 print()
 print('Precisions')
-print(precisions)
+print(PRECISIONS)
 
 print()
 print('Recalls')
-print(recalls)
+print(RECALLS)
 
-f_scores = []
+F_SCORES = []
 
-for index in range(0, len(classes)):
-    f_score = (2 * precisions[index] * recalls[index]) / (precisions[index] + recalls[index])
-    f_scores.append(f_score)
+for index in range(0, len(CLASSES)):
+    f_score = (2 * PRECISIONS[index] * RECALLS[index]) / (PRECISIONS[index] + RECALLS[index])
+    F_SCORES.append(f_score)
 
 print()
 print('F-Scores')
-print(f_scores)   
+print(F_SCORES)

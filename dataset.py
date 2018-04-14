@@ -1,3 +1,4 @@
+"""Module to generate training and testing datasets"""
 import os
 import glob
 from sklearn.utils import shuffle
@@ -7,25 +8,29 @@ import numpy as np
 
 
 def load_train(train_path, image_size, classes):
+    """Reads image files for training and returns lists of images and labels"""
     images = []
     labels = []
     img_names = []
     cls = []
 
-    print('Going to read training images')
+    print('Reading training images')
     for fields in classes:
         index = classes.index(fields)
-        print('Now going to read {} files (Index: {})'.format(fields, index))
+        print('Reading {} files (Index: {})'.format(fields, index))
         path = os.path.join(train_path, fields, '*g')
         files = glob.glob(path)
-        for fl in files:
-            image = cv2.imread(fl)
-            # use videos instead of images
+        for filename in files:
+
+            # Reading the image using OpenCV
+            image = cv2.imread(filename)
+
+            # Use midframe of each video instead of images
             # vidcap = cv2.VideoCapture(fl)
             # vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
             # success, image = vidcap.read()
             # print(success)
-            # take midframe of each video
+
             image = cv2.resize(image, (image_size, image_size), 0, 0, cv2.INTER_LINEAR)
             image = image.astype(np.float32)
             image = np.multiply(image, 1.0 / 255.0)
@@ -33,7 +38,7 @@ def load_train(train_path, image_size, classes):
             label = np.zeros(len(classes))
             label[index] = 1.0
             labels.append(label)
-            flbase = os.path.basename(fl)
+            flbase = os.path.basename(filename)
             img_names.append(flbase)
             cls.append(fields)
     images = np.array(images)
@@ -44,8 +49,46 @@ def load_train(train_path, image_size, classes):
     return images, labels, img_names, cls
 
 
+def load_test(test_path, image_size, classes):
+    """Reads image files for testing and returns lists of images and labels"""
+    train_batches = []
+    image_size = 128
+    num_channels = 3
+
+    print('Reading testing images')
+    for fields in classes:
+
+        images = []
+
+        path = os.path.join(test_path, fields, '*g')
+        files = glob.glob(path)
+        for filename in files:
+
+            # Reading the image using OpenCV
+            image = cv2.imread(filename)
+
+            # use midframe of each video instead of images
+            # vidcap = cv2.VideoCapture(filename)
+            # vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
+            # success, image = vidcap.read()
+            # print(success)
+
+            # Resizing the image to our desired size and preprocessing will be done exactly as done during training
+            image = cv2.resize(image, (image_size, image_size), 0, 0, cv2.INTER_LINEAR)
+            images.append(image)
+        images = np.array(images, dtype=np.uint8)
+        images = images.astype('float32')
+        images = np.multiply(images, 1.0/255.0)
+
+        # The input to the network is of shape [None image_size image_size num_channels]. Hence we reshape.
+        train_batch = images.reshape(len(images), image_size, image_size, num_channels)
+        train_batches.append(train_batch)
+
+    return train_batches
+
+
 class DataSet(object):
-    "asdf"
+    """Dataset Class"""
 
     def __init__(self, images, labels, img_names, cls):
         self._num_examples = images.shape[0]
