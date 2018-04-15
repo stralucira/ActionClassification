@@ -77,10 +77,10 @@ def performance_measure(test_batches, session):
 
 F_SCORES, RECALLS, PRECISIONS, CONFUSION_MATRIX = performance_measure(TEST_BATCHES_INPUT, SESSION)
 
-np.savetxt('own_final_confusion_matrix.csv', CONFUSION_MATRIX, fmt='%i', delimiter=',')
-np.savetxt('own_final_precisions.csv', PRECISIONS, delimiter=",")
-np.savetxt('own_final_recalls.csv', RECALLS, delimiter=",")
-np.savetxt('onw_final_f_scores.csv', F_SCORES, delimiter=",")
+np.savetxt('final_confusion_matrix.csv', CONFUSION_MATRIX, fmt='%i', delimiter=',')
+np.savetxt('final_precisions.csv', PRECISIONS, delimiter=",")
+np.savetxt('final_recalls.csv', RECALLS, delimiter=",")
+np.savetxt('final_f_scores.csv', F_SCORES, delimiter=",")
 
 print('Confusion Matrix')
 print(CONFUSION_MATRIX)
