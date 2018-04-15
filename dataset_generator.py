@@ -8,9 +8,9 @@ import tensorflow as tf
 import numpy as np
 import cv2
 
-from classes import classes
-from classes import train_path
-from classes import test_path
+from parameters import CLASSES
+from parameters import TRAIN_PATH
+from parameters import TEST_PATH
 
 
 def mid_frame_extractor(classes, train_path):
@@ -39,7 +39,7 @@ def mid_frame_extractor(classes, train_path):
             print('Length of video ' + os.path.basename(fl) + ': '+  str(length) + ' frames.')            
             vidcap.release()
 
-# mid_frame_extractor(classes, test_path)
+# mid_frame_extractor(CLASSES, TEST_PATH)
 
 
 def optical_flow_generator(classes, train_path):
@@ -86,7 +86,7 @@ def optical_flow_generator(classes, train_path):
             print('Done processing ' + os.path.basename(fl) + '.')            
             vidcap.release()
 
-# optical_flow_generator(classes, train_path)
+# optical_flow_generator(CLASSES, TRAIN_PATH)
 
 
 def fold_generator(classes, train_path, fold_size):
@@ -118,16 +118,8 @@ def fold_generator(classes, train_path, fold_size):
 
     return fold_paths, fold_classes
 
-# fold_generator(classes, train_path, 10)
+# fold_generator(CLASSES, TRAIN_PATH, 10)
 
-
-# def dataset_constructor(classes, train_path, fold_size):
-#     fold_paths, fold_classes = fold_generator(classes, train_path, fold_size)
-#     datasets = []
-
-#     for fold_index in range(0, fold_size):
-#         dataset = tf.data.Dataset.from_tensor_slices((fold_paths[fold_index], fold_classes[fold_index])) 
-#         dataset = dataset.map(lambda filename, )
 
 
 def mirror_augment_generator(classes, train_path):
@@ -159,4 +151,4 @@ def mirror_augment_generator(classes, train_path):
             print('Length of video ' + os.path.basename(fl) + ': '+  str(length) + ' frames.')            
             vidcap.release()
 
-# mirror_augment_generator(classes, train_path)
+# mirror_augment_generator(CLASSES, TRAIN_PATH)

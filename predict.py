@@ -6,6 +6,7 @@ from dataset import load_test
 from parameters import CLASSES
 from parameters import TEST_PATH
 from parameters import IMG_SIZE
+from parameters import NUM_CHANNELS
 
 # Let us restore the saved model
 SESSION = tf.Session()
@@ -15,7 +16,7 @@ SAVER = tf.train.import_meta_graph('ucf101-model.meta')
 SAVER.restore(SESSION, tf.train.latest_checkpoint('./'))
 
 # Load all the test batches
-TEST_BATCHES_INPUT = load_test(TEST_PATH, IMG_SIZE, CLASSES)
+TEST_BATCHES_INPUT = load_test(TEST_PATH, IMG_SIZE, CLASSES, NUM_CHANNELS)
 
 def performance_measure(test_batches, session):
     """Measure trained convolutional neural network performance"""
@@ -43,10 +44,10 @@ def performance_measure(test_batches, session):
         feed_dict_testing = {x: test_batch, y_true: y_test_images}
         result = session.run(y_pred, feed_dict=feed_dict_testing)
         # result is of this format [probabiliy_of_rose probability_of_sunflower]
-        # print()
-        # print('Prediction results for ' + str(len(test_batch)) + ' data(s) in class ' + str(actual_class_counter + 1) + ': ' + CLASSES[actual_class_counter])
-        # print(result)
-        # print()
+        print()
+        print('Prediction results for ' + str(len(test_batch)) + ' data(s) in class ' + str(actual_class_counter + 1) + ': ' + CLASSES[actual_class_counter])
+        print(result)
+        print()
 
         # Fill in confusion matrix based on the actual and predicted labels
         for index, predicted_class in enumerate(session.run(tf.argmax(result, axis=1))):
@@ -76,10 +77,10 @@ def performance_measure(test_batches, session):
 
 F_SCORES, RECALLS, PRECISIONS, CONFUSION_MATRIX = performance_measure(TEST_BATCHES_INPUT, SESSION)
 
-np.savetxt('final_confusion_matrix.csv', CONFUSION_MATRIX, fmt='%i', delimiter=',')
-np.savetxt('final_precisions.csv', PRECISIONS, delimiter=",")
-np.savetxt('final_recalls.csv', RECALLS, delimiter=",")
-np.savetxt('final_f_scores.csv', F_SCORES, delimiter=",")
+np.savetxt('own_final_confusion_matrix.csv', CONFUSION_MATRIX, fmt='%i', delimiter=',')
+np.savetxt('own_final_precisions.csv', PRECISIONS, delimiter=",")
+np.savetxt('own_final_recalls.csv', RECALLS, delimiter=",")
+np.savetxt('onw_final_f_scores.csv', F_SCORES, delimiter=",")
 
 print('Confusion Matrix')
 print(CONFUSION_MATRIX)

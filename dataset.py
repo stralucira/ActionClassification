@@ -34,6 +34,11 @@ def load_train(train_path, image_size, classes):
             image = cv2.resize(image, (image_size, image_size), 0, 0, cv2.INTER_LINEAR)
             image = image.astype(np.float32)
             image = np.multiply(image, 1.0 / 255.0)
+
+            # Reading thr optical flow data using OpenCV
+            # image = cv2.optflow.readOpticalFlow(filename)
+            # image = cv2.resize(image, (image_size, image_size), 0, 0, cv2.INTER_LINEAR)
+
             images.append(image)
             label = np.zeros(len(classes))
             label[index] = 1.0
@@ -41,6 +46,7 @@ def load_train(train_path, image_size, classes):
             flbase = os.path.basename(filename)
             img_names.append(flbase)
             cls.append(fields)
+
     images = np.array(images)
     labels = np.array(labels)
     img_names = np.array(img_names)
@@ -49,11 +55,9 @@ def load_train(train_path, image_size, classes):
     return images, labels, img_names, cls
 
 
-def load_test(test_path, image_size, classes):
+def load_test(test_path, image_size, classes, num_channels):
     """Reads image files for testing and returns lists of images and labels"""
     train_batches = []
-    image_size = 128
-    num_channels = 3
 
     print('Reading testing images')
     for fields in classes:
@@ -62,23 +66,31 @@ def load_test(test_path, image_size, classes):
 
         path = os.path.join(test_path, fields, '*g')
         files = glob.glob(path)
-        for filename in files:
 
+        for filename in files:
+ 
             # Reading the image using OpenCV
             image = cv2.imread(filename)
 
-            # use midframe of each video instead of images
+            # Use midframe of each video instead of images
             # vidcap = cv2.VideoCapture(filename)
             # vidcap.set(1, (int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) + 2 // 2) // 2)
             # success, image = vidcap.read()
             # print(success)
 
+            # Reading thr optical flow data using OpenCV
+            # image = cv2.optflow.readOpticalFlow(filename)
+
             # Resizing the image to our desired size and preprocessing will be done exactly as done during training
             image = cv2.resize(image, (image_size, image_size), 0, 0, cv2.INTER_LINEAR)
             images.append(image)
+
         images = np.array(images, dtype=np.uint8)
         images = images.astype('float32')
         images = np.multiply(images, 1.0/255.0)
+
+        # Optical flow processing
+        # images = np.array(images)
 
         # The input to the network is of shape [None image_size image_size num_channels]. Hence we reshape.
         train_batch = images.reshape(len(images), image_size, image_size, num_channels)

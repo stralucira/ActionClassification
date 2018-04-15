@@ -29,7 +29,7 @@ VALIDATION_SIZE = 0.2
 
 # We shall load all the training and validation images and labels into memory using openCV and use that during training
 data = dataset.read_train_sets(TRAIN_PATH, IMG_SIZE, CLASSES, validation_size=VALIDATION_SIZE)
-test_batches = dataset.load_test(TEST_PATH, IMG_SIZE, CLASSES)
+test_batches = dataset.load_test(TEST_PATH, IMG_SIZE, CLASSES, NUM_CHANNELS)
 
 print("Complete reading input data. Will Now print a snippet of it")
 print("Number of files in Training-set:\t{}".format(len(data.train.labels)))
